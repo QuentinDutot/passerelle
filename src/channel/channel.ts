@@ -110,7 +110,7 @@ export const createChannel = <T extends ChannelSchema>(channelName: string): Cha
   const sendAwait = <K extends keyof T['awaits'] & string>(
     action: K,
     payload: Parameters<T['awaits'][K]>[0],
-  ): Promise<ReturnType<T['awaits'][K]> extends Promise<infer R> ? R : never> => {
+  ): Promise<ReturnType<T['awaits'][K]>> => {
     return new Promise((resolve, reject) => {
       const requestId = Date.now().toString(36) + Math.random().toString(36).substring(2)
 

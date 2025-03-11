@@ -33,7 +33,7 @@ export interface ChannelInterface<T extends ChannelSchema> {
   sendAwait: <K extends keyof T['awaits'] & string>(
     action: K,
     payload: Parameters<T['awaits'][K]>[0],
-  ) => Promise<ReturnType<T['awaits'][K]> extends Promise<infer R> ? R : never>
+  ) => Promise<ReturnType<T['awaits'][K]>>
 
   destroy: () => void
 }
