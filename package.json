@@ -1,0 +1,47 @@
+{
+  "name": "passerelle",
+  "type": "module",
+  "version": "0.0.0",
+  "license": "MIT",
+  "keywords": [
+    "broadcastchannel",
+    "event-driven",
+    "web-workers",
+    "message-bus",
+    "async-messaging",
+    "typed-messaging"
+  ],
+  "description": "TypeScript BroadcastChannel wrapper for structured Events and Async/Await.",
+  "homepage": "https://github.com/QuentinDutot/passerelle#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/QuentinDutot/passerelle.git"
+  },
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "files": [
+    "build",
+    "package.json",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --out-dir build --treeshake --clean --dts",
+    "test": "tsx --test 'src/index.test.ts' 'src/**/*.test.ts'",
+    "lint": "biome lint --write",
+    "format": "biome format --write",
+    "check": "tsc && biome check --write",
+    "release:prepare": "npm run build && npm run check && npm run test",
+    "release:patch": "npm version patch",
+    "release:minor": "npm version minor",
+    "release:major": "npm version major",
+    "release:publish": "npm publish && git push --follow-tags && open-cli https://github.com/QuentinDutot/passerelle/releases/new"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "~1.9.4",
+    "@types/node": "^22.13.10",
+    "open-cli": "^8.0.0",
+    "tsup": "^8.4.0",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2"
+  }
+}
