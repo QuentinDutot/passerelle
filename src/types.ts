@@ -22,7 +22,7 @@ export type ChannelMessage = ChannelEvent<string, unknown> | ChannelRequest<stri
 export interface ChannelSchema {
   events: Record<string, unknown>
   // biome-ignore lint/suspicious/noExplicitAny: unknown arguments are not supported
-  awaits: Record<string, (...args: any[]) => Promise<unknown>>
+  awaits: Record<string, (...args: any[]) => unknown>
 }
 
 export interface ChannelInterface<T extends ChannelSchema> {
