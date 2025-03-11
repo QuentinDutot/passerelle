@@ -8,8 +8,8 @@ interface TestSchema {
     statusChanged: string
   }
   awaits: {
-    calculateValue: (params: { x: number; y: number }) => Promise<number>
-    fetchUserData: (userId: string) => Promise<{ name: string; email: string }>
+    calculateValue: (params: { x: number; y: number }) => number
+    fetchUserData: (userId: string) => { name: string; email: string }
   }
 }
 
@@ -65,11 +65,7 @@ describe('channel', () => {
     const mainChannel = createChannel<TestSchema>('test-requests')
     const workerChannel = createChannel<TestSchema>('test-requests')
 
-    workerChannel.onAwait('calculateValue', async ({ x, y }) => {
-      await new Promise((resolve) => setTimeout(resolve, 100))
-
-      return x * y
-    })
+    workerChannel.onAwait('calculateValue', ({ x, y }) => x * y)
 
     const result = await mainChannel.sendAwait('calculateValue', { x: 10, y: 20 })
     assert.equal(result, 200)
@@ -80,10 +76,7 @@ describe('channel', () => {
   it('handles request timeouts', async () => {
     const channel = createChannel<TestSchema>('test-timeout')
 
-    channel.onAwait('calculateValue', async () => {
-      await new Promise((resolve) => setTimeout(resolve, 6000)) // Longer than timeout
-      return 42
-    })
+    channel.onAwait('calculateValue', () => 42)
 
     await assert.rejects(
       async () => {
