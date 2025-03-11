@@ -91,6 +91,15 @@ export const createChannel = <T extends ChannelSchema>(channelName: string): Cha
   }
 
   const sendEvent = <K extends keyof T['events'] & string>(action: K, payload: T['events'][K]): void => {
+    // Call local handlers first
+    const handlers = eventHandlers.get(action)
+    if (handlers) {
+      for (const handler of handlers) {
+        handler(payload)
+      }
+    }
+
+    // Then broadcast to other channels
     channel.postMessage({
       type: 'event',
       action,

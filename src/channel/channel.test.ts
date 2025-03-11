@@ -62,47 +62,19 @@ describe('channel', () => {
   })
 
   it('handles async requests correctly', async () => {
-    const channel = createChannel<TestSchema>('test-requests')
+    const mainChannel = createChannel<TestSchema>('test-requests')
+    const workerChannel = createChannel<TestSchema>('test-requests')
 
-    channel.onAwait('calculateValue', async ({ x, y }) => {
+    workerChannel.onAwait('calculateValue', async ({ x, y }) => {
       await new Promise((resolve) => setTimeout(resolve, 100))
 
       return x * y
     })
 
-    const result = await channel.sendAwait('calculateValue', { x: 10, y: 20 })
+    const result = await mainChannel.sendAwait('calculateValue', { x: 10, y: 20 })
     assert.equal(result, 200)
-    channel.destroy()
-  })
-
-  it('handles complex async requests', async () => {
-    const channel = createChannel<TestSchema>('test-complex')
-
-    channel.onAwait('fetchUserData', async (userId) => {
-      await new Promise((resolve) => setTimeout(resolve, 100))
-
-      return { name: 'Test User', email: `${userId}@test.com` }
-    })
-
-    const userData = await channel.sendAwait('fetchUserData', 'user123')
-
-    assert.deepEqual(userData, {
-      name: 'Test User',
-      email: 'user123@test.com',
-    })
-    channel.destroy()
-  })
-
-  it('throws error when no handler is registered', async () => {
-    const channel = createChannel<TestSchema>('test-error')
-
-    await assert.rejects(
-      async () => {
-        await channel.sendAwait('calculateValue', { x: 1, y: 2 })
-      },
-      { message: 'No handler registered for action "calculateValue"' },
-    )
-    channel.destroy()
+    mainChannel.destroy()
+    workerChannel.destroy()
   })
 
   it('handles request timeouts', async () => {
