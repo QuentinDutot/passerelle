@@ -4,94 +4,92 @@
 [![npm](https://img.shields.io/npm/dt/passerelle.svg?maxAge=1000)](https://www.npmjs.com/package/passerelle)
 [![CI](https://github.com/QuentinDutot/passerelle/actions/workflows/ci.yml/badge.svg)](https://github.com/QuentinDutot/passerelle/actions/workflows/ci.yml)
 
-TypeScript **Inversion of Control** container for **Dependency Injection**.
+TypeScript **BroadcastChannel** wrapper for structured **Events** and **Async/Await**.
 
-It supports **Functions and Classes**, **Scoped Containers**, **Transient and Singleton Strategies**, and **Cyclic Dependency Detection**.
+It supports **Event-driven Communication**, **Request/Response Pattern**, **Timeout Handling**, and **Type-safe Messaging**.
 
-- 🪶 0.9KB minified
+- 🪶 1.2KB minified
 - 🧩 Zero dependencies
 - 📦 TypeScript and ESM
 - 🧪 100% Test Coverage
-- 🌐 Runtime Agnostic (Browser, Node, Deno, Bun, AWS, Vercel, Cloudflare, ..)
+- 🌐 Web Worker, Iframe, Multi-Tab
 
 ## 🚀 Usage
 
 ```js
-import { createContainer } from 'conteneur'
+import { createChannel } from 'passerelle'
 
-const container = createContainer()
+interface ChannelInterface {
+  events: {
+    sayHello: string
+  }
+  awaits: {
+    performCalculation: (a: number, b: number) => Promise<number>
+  }
+}
 
-container.register({
-  dataService: [createDataService],
-  reportService: [createReportService],
+const channel = createChannel<ChannelInterface>('channel-name')
+
+channel.onEvent('sayHello', console.log)
+
+channel.onAwait('performCalculation', (a: number, b: number) => {
+  // simulate expensive calculation that could be running in a worker
+  await new Promise((resolve) => setTimeout(resolve, 1000))
+  return a + b
 })
 
-const reportService = container.resolve('reportService')
-
-reportService.getReport() // Report: data from DataService
+const result = await channel.sendAwait('performCalculation', 10, 20)
+console.log(result) // 30
 ```
-
-Full TypeScript example with resolution, injection, scoping: [docs/typescript-example.md](./docs/typescript-example.md)
 
 ## 🔋 APIs
 
-Creates a new container.
+Creates a new channel, using the [Broadcast Channel API](https://developer.mozilla.org/fr/docs/Web/API/Broadcast_Channel_API).
 
 ```js
-createContainer(options?: ContainerOptions): Container
+createChannel(name: string): ChannelInstance
 ```
 
-`options.defaultStrategy` : *transient* (default) - *singleton*
+### onEvent
 
-### register
-
-Registers multiple resolvers within the container.
+Registers a listener to receive event messages.
 
 ```js
-container.register(entries: ResolverEntries): void
+channel.onEvent(action: string, (payload: T) => void): void
 ```
 
-`options.strategy` : *transient* (default) - *singleton*
+### onAwait
 
-### resolve
-
-Injects a function or a class **registered** in the container with its dependencies and returns the result.
+Registers a listener to handle await messages.
 
 ```js
-container.resolve<Key  extends keyof Container>(key: Key): Container[Key]
+channel.onAwait(action: string, (payload: T) => Promise<U>): void
 ```
 
-### inject
+### sendEvent
 
-Injects a function or a class **not registered** in the container with its dependencies and returns the result.
+Sends an event message to listeners.
 
 ```js
-container.inject<T>(target: FunctionFactory<T>): T
+channel.sendEvent(action: string, payload: T): void
 ```
 
-### createScope
+### sendAwait
 
-Creates a new scope within the container.
+Sends an await message to listeners.
 
 ```js
-container.createScope():  void
+channel.sendAwait(action: string, payload: T): Promise<U>
 ```
 
-## 📊 Comparisons
-|                     | ConteneurJS | InversifyJS | TSyringe  | TypeDI   | Awilix    |
-|---------------------|-------------|-------------|-----------|----------|-----------|
-| TS + ESM + Tests    | ✅          | ✅          | ✅        | ✅       | ✅        |
-| Dependency Count    | 🥇 0        | 🥈 1        | 🥈 1      | 🥇 0     | 🥉 2      |
-| Runtime Agnostic    | ✅          | ❌          | ❌        | ❌       | ❌        |
-| Function Support    | ✅          | ❌          | ❌        | ❌       | ✅        |
-| Class Support       | ✅          | ✅          | ✅        | ✅       | ✅        |
-| Value Support       | ✅          | ❌          | ❌        | ❌       | ✅        |
-| Decorator Free      | ✅          | ❌          | ❌        | ❌       | ✅        |
-| Lifetime Management | ✅          | ✅          | ✅        | ✅       | ✅        |
-| Scoped Container    | ✅          | ✅          | ✅        | ❌       | ✅        |
-| Size (min)          | 🥇 1.1kb    | ➖ 49.9kb   | ➖ 15.6kb | 🥈 9.5kb | 🥉 12.5kb |
-| Size (min + gzip)   | 🥇 0.6kb    | ➖ 11.1kb   | ➖ 4.7kb  | 🥈 2.7kb | 🥉 4.6kb  |
+### destroy
+
+Closes the channel, aborts pending awaits and clears listeners.
+
+```js
+channel.destroy(): void
+```
 
 ## 📃 Inspiration
 
-This project was inspired by [jeffijoe/awilix](https://github.com/jeffijoe/awilix) and builds upon its core concepts.
+This project was inspired by [GoogleChromeLabs/comlink](https://github.com/GoogleChromeLabs/comlink) and builds upon its core concepts.
